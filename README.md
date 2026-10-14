@@ -35,6 +35,49 @@ Add the flake as an input and import its module:
 The only module options are the two booleans `cli` and `desktop`; both default
 to `false`.
 
+## Home Manager
+
+Home Manager can consume the package outputs directly, without importing the
+NixOS module:
+
+```nix
+{
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    home-manager = {
+      url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    codex.url = "github:0x0bsod/codex-flake";
+  };
+
+  outputs = { nixpkgs, home-manager, codex, ... }:
+    let
+      system = "x86_64-linux";
+      pkgs = nixpkgs.legacyPackages.${system};
+    in {
+      homeConfigurations.alex = home-manager.lib.homeManagerConfiguration {
+        inherit pkgs;
+        modules = [{
+          home = {
+            username = "alex";
+            homeDirectory = "/home/alex";
+            stateVersion = "26.05";
+            packages = with codex.packages.${system}; [
+              codex-cli
+              chatgpt-desktop
+            ];
+          };
+        }];
+      };
+    };
+}
+```
+
+Remove either package from `home.packages` when only the CLI or desktop app is
+wanted. For release-based deployments, append a tag such as `/v0.1.0` to the
+`codex.url` after publishing that tag.
+
 ## Standalone use
 
 ```console
