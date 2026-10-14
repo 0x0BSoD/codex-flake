@@ -88,6 +88,21 @@ nix build .#chatgpt-desktop
 The artifacts use immutable, versioned OpenAI release/repository URLs and pinned
 hashes so Nix builds remain reproducible.
 
+## Desktop project crash on NixOS
+
+The desktop package patches the bundled project watcher's libc detection to use
+Nix's `ldd`. Without this patch, opening or creating a project can terminate the
+app with `SIGILL` in `node::GetNodeReport`: the loader path relocated by
+`patchelf` falls outside the detector's read window, `/usr/bin/ldd` is absent,
+and its diagnostic-report fallback crashes in a Node worker.
+
+After updating this flake, rebuild your Home Manager or NixOS configuration.
+To try the package directly, fully quit the running desktop app and run:
+
+```console
+nix run .#chatgpt-desktop
+```
+
 ## Updating package versions
 
 Check whether either official OpenAI channel has a newer release:

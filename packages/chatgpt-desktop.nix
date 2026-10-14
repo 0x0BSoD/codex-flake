@@ -3,6 +3,7 @@
   stdenv,
   fetchurl,
   dpkg,
+  asar,
   autoPatchelfHook,
   alsa-lib,
   at-spi2-core,
@@ -51,6 +52,7 @@ stdenv.mkDerivation {
 
   nativeBuildInputs = [
     dpkg
+    asar
     autoPatchelfHook
   ];
   buildInputs = [
@@ -86,6 +88,13 @@ stdenv.mkDerivation {
   unpackPhase = ''
     runHook preUnpack
     dpkg-deb -x "$src" .
+    # patchelf can relocate PT_INTERP beyond detect-libc's 2 KiB read window.
+    # NixOS also lacks /usr/bin/ldd, so @parcel/watcher otherwise falls back
+    # to process.report.getReport(), which traps in the bundled Node worker.
+    asar extract usr/lib/chatgpt/resources/app.asar app-asar
+    substituteInPlace app-asar/node_modules/@parcel/watcher/node_modules/detect-libc/lib/filesystem.js \
+      --replace-fail "'/usr/bin/ldd'" "'${lib.getBin stdenv.cc.libc}/bin/ldd'"
+    asar pack app-asar usr/lib/chatgpt/resources/app.asar --unpack '*.node'
     runHook postUnpack
   '';
 
