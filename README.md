@@ -44,3 +44,24 @@ nix build .#chatgpt-desktop
 
 The artifacts use immutable, versioned OpenAI release/repository URLs and pinned
 hashes so Nix builds remain reproducible.
+
+## Updating package versions
+
+Check whether either official OpenAI channel has a newer release:
+
+```console
+nix run .#update -- --check
+```
+
+The check exits with status `1` when an update is available, which makes it
+suitable for CI. Apply all available updates with:
+
+```console
+nix run .#update
+```
+
+To operate on only one package, pass `--cli` or `--desktop`. The updater reads
+OpenAI's CLI release metadata and Debian repository indexes, verifies that both
+desktop architectures have the same version, and atomically rewrites
+`packages/versions.nix` with the new versions and hashes. Review and build the
+result before committing it.

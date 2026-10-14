@@ -27,9 +27,30 @@
         rec {
           codex-cli = pkgs.callPackage ./packages/codex-cli.nix { };
           chatgpt-desktop = pkgs.callPackage ./packages/chatgpt-desktop.nix { };
+          update = pkgs.writeShellApplication {
+            name = "update";
+            runtimeInputs = with pkgs; [
+              coreutils
+              curl
+              gawk
+              gitMinimal
+              gzip
+              jq
+              nix
+            ];
+            text = builtins.readFile ./scripts/update.sh;
+          };
           default = codex-cli;
         }
       );
+
+      apps = forAllSystems (system: {
+        update = {
+          type = "app";
+          program = "${self.packages.${system}.update}/bin/update";
+          meta.description = "Update the pinned official OpenAI packages";
+        };
+      });
 
       nixosModules.default = import ./modules/nixos.nix self;
       nixosModules.codex = self.nixosModules.default;

@@ -5,17 +5,8 @@
 }:
 
 let
-  version = "0.162.1";
-  sources = {
-    x86_64-linux = {
-      target = "x86_64-unknown-linux-musl";
-      hash = "sha256-pnb1ciquDYbL43ZDMvCOqx/didwKMAs61P+/SGEfo+M=";
-    };
-    aarch64-linux = {
-      target = "aarch64-unknown-linux-musl";
-      hash = "sha256-U6nOC5S+snpj/esvdwTZUZnheziYqjO2BGGhqTrA2Is=";
-    };
-  };
+  release = (import ./versions.nix).cli;
+  inherit (release) version sources;
   source =
     sources.${stdenvNoCC.hostPlatform.system}
       or (throw "codex-cli: unsupported system ${stdenvNoCC.hostPlatform.system}");

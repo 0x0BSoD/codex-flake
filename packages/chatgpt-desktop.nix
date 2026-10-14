@@ -34,17 +34,8 @@
 }:
 
 let
-  version = "26.1007.71326";
-  sources = {
-    x86_64-linux = {
-      arch = "amd64";
-      hash = "sha256-DgBrSTFxL1qQ1M0ElyxuC1M87c39srUZRtW5NnRx9VY=";
-    };
-    aarch64-linux = {
-      arch = "arm64";
-      hash = "sha256-2fvYVKFSLtsrU8dVo+pez6Z7P4wDUxNAW1CWckLvugo=";
-    };
-  };
+  release = (import ./versions.nix).desktop;
+  inherit (release) version sources;
   source =
     sources.${stdenv.hostPlatform.system}
       or (throw "chatgpt-desktop: unsupported system ${stdenv.hostPlatform.system}");
