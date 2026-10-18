@@ -1,5 +1,5 @@
 {
-  description = "OpenAI Codex CLI and ChatGPT desktop app for NixOS";
+  description = "OpenAI Codex CLI for NixOS and macOS, plus the ChatGPT desktop app for NixOS";
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
@@ -9,6 +9,7 @@
       systems = [
         "x86_64-linux"
         "aarch64-linux"
+        "aarch64-darwin"
       ];
       forAllSystems = nixpkgs.lib.genAttrs systems;
       pkgsFor =
@@ -23,10 +24,10 @@
         system:
         let
           pkgs = pkgsFor system;
-        in
-        rec {
           codex-cli = pkgs.callPackage ./packages/codex-cli.nix { };
-          chatgpt-desktop = pkgs.callPackage ./packages/chatgpt-desktop.nix { };
+        in
+        {
+          inherit codex-cli;
           update = pkgs.writeShellApplication {
             name = "update";
             runtimeInputs = with pkgs; [
@@ -42,6 +43,9 @@
           };
           default = codex-cli;
         }
+        // pkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
+          chatgpt-desktop = pkgs.callPackage ./packages/chatgpt-desktop.nix { };
+        }
       );
 
       apps = forAllSystems (system: {
@@ -55,10 +59,19 @@
       nixosModules.default = import ./modules/nixos.nix self;
       nixosModules.codex = self.nixosModules.default;
 
+      darwinModules.default = import ./modules/darwin.nix self;
+      darwinModules.codex = self.darwinModules.default;
+
       formatter = forAllSystems (system: (pkgsFor system).nixfmt);
 
-      checks = forAllSystems (system: {
-        inherit (self.packages.${system}) codex-cli chatgpt-desktop;
-      });
+      checks = forAllSystems (
+        system:
+        {
+          inherit (self.packages.${system}) codex-cli;
+        }
+        // nixpkgs.lib.optionalAttrs (nixpkgs.lib.hasSuffix "-linux" system) {
+          inherit (self.packages.${system}) chatgpt-desktop;
+        }
+      );
     };
 }

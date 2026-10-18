@@ -10,6 +10,10 @@
         target = "aarch64-unknown-linux-musl";
         hash = "sha256-nY7PLRnT4YSHeYOQLWyF3kiziI3LcsOCqKDJdYRZJ/s=";
       };
+      aarch64-darwin = {
+        target = "aarch64-apple-darwin";
+        hash = "sha256-sDRPwuQfFeAHEUflhpAIBHuP9L8sSoiXl107rj8QOzQ=";
+      };
     };
   };
 

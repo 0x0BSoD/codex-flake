@@ -45,6 +45,7 @@ nix_value() {
 cli_version=$(nix_value cli.version)
 cli_x86_hash=$(nix_value cli.sources.x86_64-linux.hash)
 cli_arm_hash=$(nix_value cli.sources.aarch64-linux.hash)
+cli_darwin_arm_hash=$(nix_value cli.sources.aarch64-darwin.hash)
 desktop_version=$(nix_value desktop.version)
 desktop_x86_hash=$(nix_value desktop.sources.x86_64-linux.hash)
 desktop_arm_hash=$(nix_value desktop.sources.aarch64-linux.hash)
@@ -68,6 +69,7 @@ if $update_cli; then
 
   cli_x86_hash=$(hex_to_sri "$(cli_digest x86_64-unknown-linux-musl)")
   cli_arm_hash=$(hex_to_sri "$(cli_digest aarch64-unknown-linux-musl)")
+  cli_darwin_arm_hash=$(hex_to_sri "$(cli_digest aarch64-apple-darwin)")
 fi
 
 desktop_record() {
@@ -132,6 +134,10 @@ cat >"$tmp" <<EOF
       aarch64-linux = {
         target = "aarch64-unknown-linux-musl";
         hash = "$cli_arm_hash";
+      };
+      aarch64-darwin = {
+        target = "aarch64-apple-darwin";
+        hash = "$cli_darwin_arm_hash";
       };
     };
   };

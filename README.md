@@ -1,11 +1,12 @@
 # codex-flake
 
-Personal Nix flake packaging OpenAI's official Linux artifacts:
+Personal Nix flake packaging OpenAI's official artifacts:
 
-- `codex-cli`: the official standalone Codex release
+- `codex-cli`: the official standalone Codex release for Linux and macOS
 - `chatgpt-desktop`: the official Linux `.deb` repackaged for NixOS
 
-Both packages support `x86_64-linux` and `aarch64-linux`.
+The CLI supports `x86_64-linux`, `aarch64-linux`, and Apple Silicon macOS
+(`aarch64-darwin`). The desktop package supports the two Linux systems.
 
 ## NixOS module
 
@@ -34,6 +35,31 @@ Add the flake as an input and import its module:
 
 The only module options are the two booleans `cli` and `desktop`; both default
 to `false`.
+
+## nix-darwin module
+
+On macOS, import the nix-darwin module and enable the CLI:
+
+```nix
+{
+  inputs.codex.url = "github:0x0bsod/codex-flake";
+
+  outputs = { nix-darwin, codex, ... }: {
+    darwinConfigurations.my-mac = nix-darwin.lib.darwinSystem {
+      modules = [
+        codex.darwinModules.default
+        {
+          nixpkgs.hostPlatform = "aarch64-darwin";
+          programs.openai-codex.cli = true;
+        }
+      ];
+    };
+  };
+}
+```
+
+The macOS module exposes only the `cli` option because the desktop derivation
+packages OpenAI's Linux app.
 
 ## Home Manager
 
