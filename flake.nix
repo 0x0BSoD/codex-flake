@@ -1,5 +1,5 @@
 {
-  description = "OpenAI Codex CLI for NixOS and macOS, plus the ChatGPT desktop app for NixOS";
+  description = "OpenAI Codex CLI and ChatGPT desktop app for NixOS and macOS";
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
 
@@ -46,6 +46,9 @@
         // pkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
           chatgpt-desktop = pkgs.callPackage ./packages/chatgpt-desktop.nix { };
         }
+        // pkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isDarwin {
+          chatgpt-desktop = pkgs.callPackage ./packages/chatgpt-desktop-darwin.nix { };
+        }
       );
 
       apps = forAllSystems (system: {
@@ -69,7 +72,9 @@
         {
           inherit (self.packages.${system}) codex-cli;
         }
-        // nixpkgs.lib.optionalAttrs (nixpkgs.lib.hasSuffix "-linux" system) {
+        // nixpkgs.lib.optionalAttrs (
+          nixpkgs.lib.hasSuffix "-linux" system || system == "aarch64-darwin"
+        ) {
           inherit (self.packages.${system}) chatgpt-desktop;
         }
       );

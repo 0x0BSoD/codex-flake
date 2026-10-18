@@ -28,6 +28,9 @@
         arch = "arm64";
         hash = "sha256-mrLLuvM86+qh4G61yreBKJNvknoNl78A5AaU5fMcYps=";
       };
+      aarch64-darwin = {
+        hash = "sha256-FDicnpvXhxox44AIn4vFTgfGJwUPZ27NqlZ7JpKfehs=";
+      };
     };
   };
 }

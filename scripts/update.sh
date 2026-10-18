@@ -39,7 +39,7 @@ versions_file="$repo_root/packages/versions.nix"
 [[ -f "$versions_file" ]] || { echo "Cannot find $versions_file" >&2; exit 2; }
 
 nix_value() {
-  nix eval --raw --file "$versions_file" "$1"
+  nix --extra-experimental-features nix-command eval --raw --file "$versions_file" "$1"
 }
 
 cli_version=$(nix_value cli.version)
@@ -49,9 +49,10 @@ cli_darwin_arm_hash=$(nix_value cli.sources.aarch64-darwin.hash)
 desktop_version=$(nix_value desktop.version)
 desktop_x86_hash=$(nix_value desktop.sources.x86_64-linux.hash)
 desktop_arm_hash=$(nix_value desktop.sources.aarch64-linux.hash)
+desktop_darwin_arm_hash=$(nix_value desktop.sources.aarch64-darwin.hash)
 
 hex_to_sri() {
-  nix hash convert --hash-algo sha256 --to sri "$1"
+  nix --extra-experimental-features nix-command hash convert --hash-algo sha256 --to sri "$1"
 }
 
 if $update_cli; then
@@ -80,13 +81,28 @@ desktop_record() {
     awk '
       $1 == "Package:" && $2 == "chatgpt" { found = 1 }
       found && $1 == "Version:" { version = $2 }
-      found && $1 == "SHA256:" { print version, $2; exit }
+      found && !printed && $1 == "SHA256:" { print version, $2; printed = 1 }
+    '
+}
+
+desktop_macos_record() {
+  curl --fail --silent --show-error --location \
+    "https://persistent.oaistatic.com/codex-app-prod/appcast.xml" |
+    awk '
+      match($0, /<sparkle:shortVersionString>([^<]+)<\/sparkle:shortVersionString>/, version) {
+        latest = version[1]
+      }
+      !printed && latest != "" && match($0, /enclosure url="([^"]*ChatGPT-darwin-arm64-[^"]+\.zip)"/, source) {
+        print latest, source[1]
+        printed = 1
+      }
     '
 }
 
 if $update_desktop; then
   read -r new_desktop_version desktop_x86_hex <<<"$(desktop_record amd64)"
   read -r desktop_arm_version desktop_arm_hex <<<"$(desktop_record arm64)"
+  read -r desktop_darwin_version desktop_darwin_url <<<"$(desktop_macos_record)"
   [[ -n "$new_desktop_version" && -n "$desktop_x86_hex" ]] || {
     echo "Could not read the amd64 desktop package metadata" >&2; exit 1;
   }
@@ -94,6 +110,16 @@ if $update_desktop; then
     echo "Desktop repository versions differ: amd64=$new_desktop_version arm64=$desktop_arm_version" >&2
     exit 1
   }
+  [[ "$new_desktop_version" == "$desktop_darwin_version" ]] || {
+    echo "Desktop repository versions differ: linux=$new_desktop_version macOS=$desktop_darwin_version" >&2
+    exit 1
+  }
+  if ! $check_only && [[ "$new_desktop_version" != "$desktop_version" ]]; then
+    desktop_darwin_arm_hash=$(
+      nix --extra-experimental-features nix-command store prefetch-file --json "$desktop_darwin_url" |
+        jq -er .hash
+    )
+  fi
   desktop_version=$new_desktop_version
   desktop_x86_hash=$(hex_to_sri "$desktop_x86_hex")
   desktop_arm_hash=$(hex_to_sri "$desktop_arm_hex")
@@ -102,17 +128,21 @@ fi
 old_cli_version=$(nix_value cli.version)
 old_desktop_version=$(nix_value desktop.version)
 changed=false
-if $update_cli && [[ "$cli_version" != "$old_cli_version" ]]; then
-  echo "Codex CLI: $old_cli_version -> $cli_version"
-  changed=true
-else
-  echo "Codex CLI: $old_cli_version (current)"
+if $update_cli; then
+  if [[ "$cli_version" != "$old_cli_version" ]]; then
+    echo "Codex CLI: $old_cli_version -> $cli_version"
+    changed=true
+  else
+    echo "Codex CLI: $old_cli_version (current)"
+  fi
 fi
-if $update_desktop && [[ "$desktop_version" != "$old_desktop_version" ]]; then
-  echo "ChatGPT desktop: $old_desktop_version -> $desktop_version"
-  changed=true
-else
-  echo "ChatGPT desktop: $old_desktop_version (current)"
+if $update_desktop; then
+  if [[ "$desktop_version" != "$old_desktop_version" ]]; then
+    echo "ChatGPT desktop: $old_desktop_version -> $desktop_version"
+    changed=true
+  else
+    echo "ChatGPT desktop: $old_desktop_version (current)"
+  fi
 fi
 
 if $check_only; then
@@ -152,6 +182,9 @@ cat >"$tmp" <<EOF
       aarch64-linux = {
         arch = "arm64";
         hash = "$desktop_arm_hash";
+      };
+      aarch64-darwin = {
+        hash = "$desktop_darwin_arm_hash";
       };
     };
   };
