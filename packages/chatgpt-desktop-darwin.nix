@@ -7,7 +7,8 @@
 
 let
   release = (import ./versions.nix).desktop;
-  inherit (release) version sources;
+  version = release.versions.darwin;
+  inherit (release) sources;
   source =
     sources.${stdenvNoCC.hostPlatform.system}
       or (throw "chatgpt-desktop: unsupported system ${stdenvNoCC.hostPlatform.system}");

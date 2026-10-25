@@ -145,7 +145,8 @@ nix run .#update
 ```
 
 To operate on only one package, pass `--cli` or `--desktop`. The updater reads
-OpenAI's CLI release metadata and Debian repository indexes, verifies that both
-desktop architectures have the same version, and atomically rewrites
+OpenAI's CLI release metadata, Debian repository indexes, and macOS appcast.
+Linux and macOS desktop versions are pinned and reported independently; the two
+Linux architectures must still have the same version. The updater atomically rewrites
 `packages/versions.nix` with the new versions and hashes. Review and build the
 result before committing it.

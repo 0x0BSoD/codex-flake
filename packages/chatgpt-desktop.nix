@@ -36,7 +36,8 @@
 
 let
   release = (import ./versions.nix).desktop;
-  inherit (release) version sources;
+  version = release.versions.linux;
+  inherit (release) sources;
   source =
     sources.${stdenv.hostPlatform.system}
       or (throw "chatgpt-desktop: unsupported system ${stdenv.hostPlatform.system}");

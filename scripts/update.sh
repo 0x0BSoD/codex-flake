@@ -46,7 +46,8 @@ cli_version=$(nix_value cli.version)
 cli_x86_hash=$(nix_value cli.sources.x86_64-linux.hash)
 cli_arm_hash=$(nix_value cli.sources.aarch64-linux.hash)
 cli_darwin_arm_hash=$(nix_value cli.sources.aarch64-darwin.hash)
-desktop_version=$(nix_value desktop.version)
+desktop_linux_version=$(nix_value desktop.versions.linux)
+desktop_darwin_version=$(nix_value desktop.versions.darwin)
 desktop_x86_hash=$(nix_value desktop.sources.x86_64-linux.hash)
 desktop_arm_hash=$(nix_value desktop.sources.aarch64-linux.hash)
 desktop_darwin_arm_hash=$(nix_value desktop.sources.aarch64-darwin.hash)
@@ -102,7 +103,7 @@ desktop_macos_record() {
 if $update_desktop; then
   read -r new_desktop_version desktop_x86_hex <<<"$(desktop_record amd64)"
   read -r desktop_arm_version desktop_arm_hex <<<"$(desktop_record arm64)"
-  read -r desktop_darwin_version desktop_darwin_url <<<"$(desktop_macos_record)"
+  read -r new_desktop_darwin_version desktop_darwin_url <<<"$(desktop_macos_record)"
   [[ -n "$new_desktop_version" && -n "$desktop_x86_hex" ]] || {
     echo "Could not read the amd64 desktop package metadata" >&2; exit 1;
   }
@@ -110,23 +111,24 @@ if $update_desktop; then
     echo "Desktop repository versions differ: amd64=$new_desktop_version arm64=$desktop_arm_version" >&2
     exit 1
   }
-  [[ "$new_desktop_version" == "$desktop_darwin_version" ]] || {
-    echo "Desktop repository versions differ: linux=$new_desktop_version macOS=$desktop_darwin_version" >&2
-    exit 1
+  [[ -n "$new_desktop_darwin_version" && -n "$desktop_darwin_url" ]] || {
+    echo "Could not read the macOS desktop package metadata" >&2; exit 1;
   }
-  if ! $check_only && [[ "$new_desktop_version" != "$desktop_version" ]]; then
+  if ! $check_only && [[ "$new_desktop_darwin_version" != "$desktop_darwin_version" ]]; then
     desktop_darwin_arm_hash=$(
       nix --extra-experimental-features nix-command store prefetch-file --json "$desktop_darwin_url" |
         jq -er .hash
     )
   fi
-  desktop_version=$new_desktop_version
+  desktop_linux_version=$new_desktop_version
+  desktop_darwin_version=$new_desktop_darwin_version
   desktop_x86_hash=$(hex_to_sri "$desktop_x86_hex")
   desktop_arm_hash=$(hex_to_sri "$desktop_arm_hex")
 fi
 
 old_cli_version=$(nix_value cli.version)
-old_desktop_version=$(nix_value desktop.version)
+old_desktop_linux_version=$(nix_value desktop.versions.linux)
+old_desktop_darwin_version=$(nix_value desktop.versions.darwin)
 changed=false
 if $update_cli; then
   if [[ "$cli_version" != "$old_cli_version" ]]; then
@@ -137,11 +139,17 @@ if $update_cli; then
   fi
 fi
 if $update_desktop; then
-  if [[ "$desktop_version" != "$old_desktop_version" ]]; then
-    echo "ChatGPT desktop: $old_desktop_version -> $desktop_version"
+  if [[ "$desktop_linux_version" != "$old_desktop_linux_version" ]]; then
+    echo "ChatGPT desktop (Linux): $old_desktop_linux_version -> $desktop_linux_version"
     changed=true
   else
-    echo "ChatGPT desktop: $old_desktop_version (current)"
+    echo "ChatGPT desktop (Linux): $old_desktop_linux_version (current)"
+  fi
+  if [[ "$desktop_darwin_version" != "$old_desktop_darwin_version" ]]; then
+    echo "ChatGPT desktop (macOS): $old_desktop_darwin_version -> $desktop_darwin_version"
+    changed=true
+  else
+    echo "ChatGPT desktop (macOS): $old_desktop_darwin_version (current)"
   fi
 fi
 
@@ -173,7 +181,10 @@ cat >"$tmp" <<EOF
   };
 
   desktop = {
-    version = "$desktop_version";
+    versions = {
+      linux = "$desktop_linux_version";
+      darwin = "$desktop_darwin_version";
+    };
     sources = {
       x86_64-linux = {
         arch = "amd64";

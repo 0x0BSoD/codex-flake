@@ -18,18 +18,21 @@
   };
 
   desktop = {
-    version = "26.1013.40934";
+    versions = {
+      linux = "26.1021.22027";
+      darwin = "26.1021.31345";
+    };
     sources = {
       x86_64-linux = {
         arch = "amd64";
-        hash = "sha256-PKWef5pmQbni+5rWgGg3hLWrgCb/dBj7ISoOvl3zodc=";
+        hash = "sha256-6wgxxzTxVPk/jrzw4X0RjaDep9wXN9xhoecURDdb8ZA=";
       };
       aarch64-linux = {
         arch = "arm64";
-        hash = "sha256-mrLLuvM86+qh4G61yreBKJNvknoNl78A5AaU5fMcYps=";
+        hash = "sha256-aN4exEBmhx5Bd7ocp5Pr7muiODl/E8eU5FsUlBwSYfs=";
       };
       aarch64-darwin = {
-        hash = "sha256-FDicnpvXhxox44AIn4vFTgfGJwUPZ27NqlZ7JpKfehs=";
+        hash = "sha256-KvzVjgSEp2R5zKIxdOCFEnqdnmNGa3VznraCWl/2E/Q=";
       };
     };
   };
