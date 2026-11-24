@@ -1,38 +1,38 @@
 {
   cli = {
-    version = "0.170.0";
+    version = "0.172.0";
     sources = {
       x86_64-linux = {
         target = "x86_64-unknown-linux-musl";
-        hash = "sha256-p3/4e+e6gJ1xVygnCnj1zjUn3AdSlBbR74kpuQuEdes=";
+        hash = "sha256-Y+OwAGXtf2IWbQUi4X9mPLhmox2A0D5jNlSC7TSh2ZE=";
       };
       aarch64-linux = {
         target = "aarch64-unknown-linux-musl";
-        hash = "sha256-P34a44xP4nMi4IK4VejuyTbQj6U41itxwH4qU/NOiEc=";
+        hash = "sha256-+vF7gHGSfzM0aoBdyMtF3k4IwNdc8OXmjOzdyii4hh4=";
       };
       aarch64-darwin = {
         target = "aarch64-apple-darwin";
-        hash = "sha256-l1UkvxOu3RsSLY0OAMCe5nCRuPaIwLN0lD27PPIseJM=";
+        hash = "sha256-CXABbUggmgnEA5E5Yp7Xm0oxxePYZOeSwENBnZj6ZGY=";
       };
     };
   };
 
   desktop = {
     versions = {
-      linux = "26.1111.71704";
-      darwin = "26.1111.71704";
+      linux = "26.1120.41243";
+      darwin = "26.1120.41243";
     };
     sources = {
       x86_64-linux = {
         arch = "amd64";
-        hash = "sha256-Ae73x3yDX34a+5K6HCkXikwZ1sZlc73TuGUg4qv4BqQ=";
+        hash = "sha256-O6oedFpaP1n5F+kvJbnt8ShKAwa3Xx8uNgp2bfOLiyM=";
       };
       aarch64-linux = {
         arch = "arm64";
-        hash = "sha256-8FUN7h+ZEn01etdgrvc5xVfUm9Z3KNLxBdAKekeA90A=";
+        hash = "sha256-cri5/y2qe8dQ+yFJzsdT9coGyu8hV1knd6RUdfQpLyc=";
       };
       aarch64-darwin = {
-        hash = "sha256-DHkNirWEJVOf4dhEBmrLi4BBWqGaXEbYlAmBURLoE00=";
+        hash = "sha256-74qtMUCeLuOZOp50DPPpTnni1yGeUPSK3qIhfUrPedQ=";
       };
     };
   };
