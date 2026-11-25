@@ -19,20 +19,20 @@
 
   desktop = {
     versions = {
-      linux = "26.1120.41243";
-      darwin = "26.1120.41243";
+      linux = "26.1120.50957";
+      darwin = "26.1120.50957";
     };
     sources = {
       x86_64-linux = {
         arch = "amd64";
-        hash = "sha256-O6oedFpaP1n5F+kvJbnt8ShKAwa3Xx8uNgp2bfOLiyM=";
+        hash = "sha256-6Ks435bWBw/V1FgqYGSQY3coJDu1Kentrhmz8KbmZNI=";
       };
       aarch64-linux = {
         arch = "arm64";
-        hash = "sha256-cri5/y2qe8dQ+yFJzsdT9coGyu8hV1knd6RUdfQpLyc=";
+        hash = "sha256-0RrbmhPSG8X1FIhZJCB68OhompeDKFUOOkOJWmlgPYk=";
       };
       aarch64-darwin = {
-        hash = "sha256-74qtMUCeLuOZOp50DPPpTnni1yGeUPSK3qIhfUrPedQ=";
+        hash = "sha256-LBZnH8qtUpGi9r4TXhKClh1TQmOcPbVVFKGvGogd3m8=";
       };
     };
   };
